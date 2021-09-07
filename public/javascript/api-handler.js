@@ -1,4 +1,4 @@
-class charactersApiHandler {
+class charactersAPIHandler {
   constructor() {
 
     this.app = axios.create({
@@ -13,7 +13,7 @@ class charactersApiHandler {
 
   createOneRegister = characterInfo => this.app.post('/characters', characterInfo)
 
-  deleteOneRegister = () => this.app.delete(`/characters/${id}`)
+  deleteOneRegister = id => this.app.delete(`/characters/${id}`)
 
   updateOneRegister = id => this.app.post(`/characters/${id}`)
 
