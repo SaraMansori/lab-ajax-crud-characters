@@ -81,7 +81,6 @@ window.addEventListener('load', () => {
       
         const delButton = document.querySelector("#delete-one")
         resetBtn(response, delButton)
-        //response.data !== null ? delButton.classList.add("active") : delButton.classList.add("inactive")
         document.querySelector("#getCharacterIdDel").value = ""
 
       })
@@ -110,7 +109,6 @@ window.addEventListener('load', () => {
         .then((response)=> {
 
           const sendButton = document.querySelector("#send-data")
-          //response.data !== null ? sendButton.classList.add("active") : sendButton.classList.add("inactive")
           resetBtn(response, sendButton)
           printCharacter(response)
           document.querySelector("#new-character-form").reset()
@@ -165,7 +163,6 @@ window.addEventListener('load', () => {
 
       const updateButton = document.querySelector("#update-data")
       resetBtn(response, updateButton)
-      //response.data !== null ? updateButton.classList.add("active") : updateButton.classList.add("inactive")
 
       printCharacter(response)
       document.querySelector('#edit-character-form').reset()
