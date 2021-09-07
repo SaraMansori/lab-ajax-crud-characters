@@ -15,52 +15,47 @@ window.addEventListener('load', () => {
     document.querySelector(id).value = `${newValue}`
   }  
 
-  characterForm = (id, name, occupation, cartoon, weapon) => `
+  resetBtn = (response, button) => {
+ 
+    response.data !== null ? button.classList.add("active") : button.classList.add("inactive")
 
-    <div class="field">
-      <label for="id">ID: </label>
-      <input type="text" name="chr-id" id="edit-id" value="${id}">
-    </div>
+    setTimeout(() => {
+      button.classList.remove("active", "inactive")
+    }, 300)
+  }
 
-    <div class="field">
-      <label for="name">Name: </label>
-      <input type="text" name="name" value="${name}">
-    </div>
+  const printCharacters = (response) => {
 
-    <div class="field">
-      <label for="occupation">Occupation: </label>
-      <input type="text" name="occupation" value="${occupation}">
-    </div>
+    let text = ""
+    const character = response.data
 
-    <div class="field">
-      <label for="weapon">Weapon: </label>
-      <input type="text" name="weapon" value="${weapon}">
-    </div>
+    character.forEach((elm) => text += characterDiv(elm.name, elm.occupation, elm.cartoon, elm.weapon))
+    document.querySelector(".characters-container").innerHTML = text
+  }
 
-    <div class="field">
-      <label for="cartoon">Is a Cartoon:</label>
-      <input name="cartoon" type="checkbox" id="editCheckBox">
-    </div>
+  const printCharacter = (response) => {
 
-    <button id="send-data">Update</button>
-  `
+    console.log(response)
 
+    let text = ""
+    const character = response.data
+
+    text += characterDiv(character.name, character.occupation, character.cartoon, character.weapon)
+    document.querySelector(".characters-container").innerHTML = text
+
+  }
+  
   document.getElementById('fetch-all').addEventListener('click', function (event) {
 
     APIHandler
       .getFullList()
-      .then( (response) => {
-        let text = ""
-
-        response.data.forEach((elm) => text += characterDiv(elm.name, elm.occupation, elm.cartoon, elm.weapon))
-        document.querySelector(".characters-container").innerHTML = text
-      })
+      .then( response => printCharacters(response) )
       .catch(err => console.log(err))
 
   });
 
 
-
+  //FETCH ONE CHARACTER
   document.getElementById('fetch-one').addEventListener('click', function (event) {
 
     const id = document.querySelector("#getCharacterIdShow").value
@@ -68,34 +63,33 @@ window.addEventListener('load', () => {
     APIHandler
       .getOneRegister(id)
       .then( (response) => {
-
-        let text = ""
-        const character = response.data
-        text += characterDiv(character.name, character.occupation, character.cartoon, character.weapon)
-        document.querySelector(".characters-container").innerHTML = text
+        printCharacter(response)
         document.querySelector("#getCharacterIdShow").value = ""
       })
       .catch(err => console.log(err))
 
   });
 
+  //DELETE ONE CHARACTER
   document.getElementById('delete-one').addEventListener('click', function (event) {
 
     const id = document.querySelector("#getCharacterIdDel").value
-
-    const delButton = document.querySelector("#delete-one")
-
+    
     APIHandler 
-      .deleteOneRegister(id)
-      .then( (response) => {
-        console.log(response)
-        response.data !== null ? delButton.classList.add("active") : delButton.classList.add("inactive")
+    .deleteOneRegister(id)
+    .then( (response) => {
+      
+        const delButton = document.querySelector("#delete-one")
+        resetBtn(response, delButton)
+        //response.data !== null ? delButton.classList.add("active") : delButton.classList.add("inactive")
         document.querySelector("#getCharacterIdDel").value = ""
+
       })
       .catch(err => console.log(err))
 
   });
 
+  //CREATE NEW CHARACTER
   document.getElementById('new-character-form').addEventListener('submit', function (event) {
 
       event.preventDefault()
@@ -109,58 +103,77 @@ window.addEventListener('load', () => {
       }
 
       console.log(inputs)
+      console.log(character)
 
       APIHandler
         .createOneRegister(character)
         .then((response)=> {
 
-          response.data !== null ? delButton.classList.add("active") : delButton.classList.add("inactive")
-
-          let text = ""
-          const newCharacter = response.data
-
-          text += characterDiv(newCharacter.name, newCharacter.occupation, newCharacter.cartoon, newCharacter.weapon)
-          document.querySelector(".characters-container").innerHTML = text
-          
+          const sendButton = document.querySelector("#send-data")
+          //response.data !== null ? sendButton.classList.add("active") : sendButton.classList.add("inactive")
+          resetBtn(response, sendButton)
+          printCharacter(response)
           document.querySelector("#new-character-form").reset()
         })
+       .catch(err => console.log(err))
 
     }
     
   );
 
-  //document.getElementById('edit-character-form').addEventListener('submit', function (event) {
+  //EDIT CHARACTER 
 
-  //  event.preventDefault()
+  document.querySelector("#edit-id").onkeyup = () => {
+    const id = document.querySelector("#edit-id").value
 
-    document.querySelector("#edit-id").onkeyup = () => {
-      const id = document.querySelector("#edit-id").value
+    APIHandler
+    .getOneRegister(id)
+    .then( (response) => {
 
-      APIHandler
-      .getOneRegister(id)
-      .then( (response) => {
-
-        let text = ""
+      if (response.data !== null) {
         
-        if (response.data !== null) {
-          
-          const {id, name, occupation, cartoon, weapon} = response.data
-          const checkbox = document.querySelector("#editCheckBox")
+        const {name, occupation, weapon} = response.data
+        const checkbox = document.querySelector("#editCheckBox")
 
-          updateValue("#edit-name", name)
-          updateValue("#edit-occupation", occupation)
-          updateValue("#edit-weapon", weapon)
-          
-          response.data.cartoon ? checkbox.checked = true : checkbox.checked = false
+        updateValue("#edit-name", name)
+        updateValue("#edit-occupation", occupation)
+        updateValue("#edit-weapon", weapon)
+        
+        response.data.cartoon ? checkbox.checked = true : checkbox.checked = false
 
-        }
+      }
+    })
+    .catch(err => console.log(err))
+  }
 
-        //document.querySelector("#edit-character-form") = ""
-      })
-      //.catch(err => console.log(err))
+  document.getElementById('edit-character-form').addEventListener('submit', function (event) {
+
+    event.preventDefault()
+
+    const inputs = document.querySelectorAll('#edit-character-form input')
+    const id = inputs[0].value
+    const character = {
+      name: inputs[1].value,
+      occupation: inputs[2].value,
+      weapon: inputs[3].value,
+      cartoon: inputs[4].checked,
     }
+        
+    APIHandler
+    .updateOneRegister(id, character)
+    .then( (response) => {
 
-  //});
+      const updateButton = document.querySelector("#update-data")
+      resetBtn(response, updateButton)
+      //response.data !== null ? updateButton.classList.add("active") : updateButton.classList.add("inactive")
+
+      printCharacter(response)
+      document.querySelector('#edit-character-form').reset()
+
+    })
+    .catch(err => console.log(err))
+
+  });
 
 
 

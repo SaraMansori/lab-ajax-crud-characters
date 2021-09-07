@@ -15,6 +15,6 @@ class charactersAPIHandler {
 
   deleteOneRegister = id => this.app.delete(`/characters/${id}`)
 
-  updateOneRegister = id => this.app.post(`/characters/${id}`)
+  updateOneRegister = (id, characterInfo) => this.app.put(`/characters/${id}`, characterInfo)
 
 }
